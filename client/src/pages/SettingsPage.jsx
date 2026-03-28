@@ -6,8 +6,9 @@ import { useTranslation } from '../i18n'
 import Navbar from '../components/Layout/Navbar'
 import CustomSelect from '../components/shared/CustomSelect'
 import { useToast } from '../components/shared/Toast'
-import { Save, Map, Palette, User, Moon, Sun, Monitor, Shield, Camera, Trash2, Lock } from 'lucide-react'
+import { Save, Map, Palette, User, Moon, Sun, Monitor, Shield, Camera, Trash2, Lock, Heart } from 'lucide-react'
 import { authApi, adminApi } from '../api/client'
+import PreferencesSection from '../components/Settings/PreferencesSection'
 
 const MAP_PRESETS = [
   { name: 'OpenStreetMap', url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' },
@@ -530,6 +531,9 @@ export default function SettingsPage() {
               </button>
             </div>
           </Section>
+
+          {/* Travel Preferences */}
+          <PreferencesSection />
 
           {/* Delete Account Confirmation */}
           {showDeleteConfirm === 'blocked' && (

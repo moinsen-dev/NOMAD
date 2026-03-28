@@ -11,6 +11,7 @@ import CategoryManager from '../components/Admin/CategoryManager'
 import BackupPanel from '../components/Admin/BackupPanel'
 import GitHubPanel from '../components/Admin/GitHubPanel'
 import AddonManager from '../components/Admin/AddonManager'
+import AIConfigPanel from '../components/Admin/AIConfigPanel'
 import { Users, Map, Briefcase, Shield, Trash2, Edit2, Camera, FileText, Eye, EyeOff, Save, CheckCircle, XCircle, Loader2, UserPlus, ArrowUpCircle, ExternalLink, Download, AlertTriangle, RefreshCw, GitBranch, Sun } from 'lucide-react'
 import CustomSelect from '../components/shared/CustomSelect'
 
@@ -25,6 +26,7 @@ export default function AdminPage() {
     { id: 'settings', label: t('admin.tabs.settings') },
     { id: 'backup', label: t('admin.tabs.backup') },
     { id: 'github', label: t('admin.tabs.github') },
+    { id: 'ai', label: t('admin.tabs.ai') || 'AI' },
   ]
 
   const [activeTab, setActiveTab] = useState('users')
@@ -705,6 +707,8 @@ export default function AdminPage() {
           {activeTab === 'backup' && <BackupPanel />}
 
           {activeTab === 'github' && <GitHubPanel />}
+
+          {activeTab === 'ai' && <AIConfigPanel />}
         </div>
       </div>
 

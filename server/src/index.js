@@ -73,6 +73,7 @@ const settingsRoutes = require('./routes/settings');
 const budgetRoutes = require('./routes/budget');
 const collabRoutes = require('./routes/collab');
 const backupRoutes = require('./routes/backup');
+const aiRoutes = require('./routes/ai');
 
 const oidcRoutes = require('./routes/oidc');
 app.use('/api/auth', authRoutes);
@@ -107,6 +108,7 @@ app.use('/api/addons/vacay', vacayRoutes);
 const atlasRoutes = require('./routes/atlas');
 app.use('/api/addons/atlas', atlasRoutes);
 
+app.use('/api', aiRoutes);
 app.use('/api/maps', mapsRoutes);
 app.use('/api/weather', weatherRoutes);
 app.use('/api/settings', settingsRoutes);

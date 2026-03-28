@@ -611,6 +611,29 @@ function initDb() {
     () => {
       try { _db.exec('ALTER TABLE reservations ADD COLUMN reservation_end_time TEXT'); } catch {}
     },
+    // 32: AI recommendations support
+    () => {
+      _db.exec(`
+        CREATE TABLE IF NOT EXISTS user_preferences (
+          user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+          interests TEXT NOT NULL DEFAULT '[]',
+          budget_level TEXT NOT NULL DEFAULT 'medium',
+          mobility TEXT NOT NULL DEFAULT 'full',
+          food_preferences TEXT NOT NULL DEFAULT '[]',
+          avoid TEXT NOT NULL DEFAULT '[]',
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE IF NOT EXISTS ai_recommendations (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          trip_id INTEGER REFERENCES trips(id) ON DELETE CASCADE,
+          user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+          prompt_hash TEXT NOT NULL,
+          recommendations TEXT NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+    },
     // Future migrations go here (append only, never reorder)
   ];
 
@@ -658,6 +681,7 @@ function initDb() {
       { id: 'vacay', name: 'Vacay', description: 'Personal vacation day planner with calendar view', type: 'global', icon: 'CalendarDays', enabled: 1, sort_order: 10 },
       { id: 'atlas', name: 'Atlas', description: 'World map of your visited countries with travel stats', type: 'global', icon: 'Globe', enabled: 1, sort_order: 11 },
       { id: 'collab', name: 'Collab', description: 'Notes, polls, and live chat for trip collaboration', type: 'trip', icon: 'Users', enabled: 1, sort_order: 6 },
+      { id: 'ai', name: 'AI Recommendations', description: 'AI-powered activity and place recommendations', type: 'global', icon: 'Sparkles', enabled: 0, sort_order: 12 },
     ];
     const insertAddon = _db.prepare('INSERT OR IGNORE INTO addons (id, name, description, type, icon, enabled, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)');
     for (const a of defaultAddons) insertAddon.run(a.id, a.name, a.description, a.type, a.icon, a.enabled, a.sort_order);

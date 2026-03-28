@@ -17,12 +17,13 @@ import PackingListPanel from '../components/Packing/PackingListPanel'
 import FileManager from '../components/Files/FileManager'
 import BudgetPanel from '../components/Budget/BudgetPanel'
 import CollabPanel from '../components/Collab/CollabPanel'
+import DiscoverPanel from '../components/Discover/DiscoverPanel'
 import Navbar from '../components/Layout/Navbar'
 import { useToast } from '../components/shared/Toast'
-import { Map, X, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from 'lucide-react'
+import { Map, X, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Sparkles } from 'lucide-react'
 import { useTranslation } from '../i18n'
 import { joinTrip, leaveTrip, addListener, removeListener } from '../api/websocket'
-import { addonsApi, accommodationsApi, authApi, tripsApi, assignmentsApi } from '../api/client'
+import { addonsApi, accommodationsApi, authApi, tripsApi, assignmentsApi, placesApi, aiApi } from '../api/client'
 import { calculateRoute, calculateSegments } from '../components/Map/RouteCalculator'
 import ConfirmDialog from '../components/shared/ConfirmDialog'
 
@@ -56,6 +57,7 @@ export default function TripPlannerPage() {
     authApi.getAppConfig().then(config => {
       if (config.allowed_file_types) setAllowedFileTypes(config.allowed_file_types)
     }).catch(() => {})
+    aiApi.checkConfig().then(data => setAiAvailable(!!data.configured)).catch(() => setAiAvailable(false))
   }, [])
 
   const TRIP_TABS = [
@@ -113,6 +115,8 @@ export default function TripPlannerPage() {
   const [fitKey, setFitKey] = useState(0)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(null) // 'left' | 'right' | null
   const [deletePlaceId, setDeletePlaceId] = useState(null)
+  const [discoverOpen, setDiscoverOpen] = useState(false)
+  const [aiAvailable, setAiAvailable] = useState(false)
 
   // Load trip + files (needed for place inspector file section)
   useEffect(() => {
@@ -570,6 +574,27 @@ export default function TripPlannerPage() {
               </div>
             </div>
 
+            {/* Discover AI button */}
+            {aiAvailable && ReactDOM.createPortal(
+              <button
+                onClick={() => setDiscoverOpen(true)}
+                style={{
+                  position: 'fixed', bottom: 24, right: 24, zIndex: 100,
+                  width: 48, height: 48, borderRadius: '50%', border: 'none',
+                  background: 'var(--accent)', color: 'var(--accent-text)',
+                  cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'transform 0.15s, box-shadow 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.08)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.25)' }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.2)' }}
+                title={t('discover.title')}
+              >
+                <Sparkles size={20} />
+              </button>,
+              document.body
+            )}
+
             {/* Mobile sidebar buttons — portal to body to escape Leaflet touch handling */}
             {activeTab === 'plan' && !mobileSidebarOpen && !showPlaceForm && !showMembersModal && !showReservationModal && ReactDOM.createPortal(
               <div className="flex md:hidden" style={{ position: 'fixed', top: 'calc(var(--nav-h) + 44px + 12px)', left: 12, right: 12, justifyContent: 'space-between', zIndex: 100, pointerEvents: 'none' }}>
@@ -733,6 +758,27 @@ export default function TripPlannerPage() {
         onConfirm={confirmDeletePlace}
         title={t('common.delete')}
         message={t('trip.confirm.deletePlace')}
+      />
+      <DiscoverPanel
+        open={discoverOpen}
+        onClose={() => setDiscoverOpen(false)}
+        tripId={tripId}
+        places={places}
+        days={days}
+        onShowOnMap={() => setFitKey(k => k + 1)}
+        onAddPlace={async (rec) => {
+          try {
+            await placesApi.create(tripId, {
+              name: rec.name,
+              description: rec.description,
+              lat: rec.lat,
+              lng: rec.lng,
+              category_name: rec.category,
+            })
+            await tripStore.loadTrip(tripId)
+            toast.success(t('trip.toast.placeAdded'))
+          } catch (err) { toast.error(err.message) }
+        }}
       />
     </div>
   )

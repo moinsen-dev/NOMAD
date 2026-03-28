@@ -248,4 +248,17 @@ export const backupApi = {
   setAutoSettings: (settings) => apiClient.put('/backup/auto-settings', settings).then(r => r.data),
 }
 
+export const preferencesApi = {
+  get: () => apiClient.get('/preferences').then(r => r.data),
+  update: (data) => apiClient.put('/preferences', data).then(r => r.data),
+}
+
+export const aiApi = {
+  recommend: (tripId, data, opts) => apiClient.post(`/trips/${tripId}/ai/recommend`, data, { signal: opts?.signal }).then(r => r.data),
+  checkConfig: () => apiClient.get('/ai/config').then(r => r.data),
+  getConfig: () => apiClient.get('/ai/config').then(r => r.data),
+  updateConfig: (data) => apiClient.put('/ai/config', data).then(r => r.data),
+  testConnection: (config) => apiClient.post('/ai/test', config || {}).then(r => r.data),
+}
+
 export default apiClient
